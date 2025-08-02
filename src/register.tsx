@@ -7,5 +7,5 @@ export const registerWebComponents = () => {
   if (typeof window === 'undefined') return;
   // @ts-expect-error element incorect type
   customElement('growtheffect-fullchatbot', defaultBotProps, Full);
-customElement('growtheffect-chatbot', defaultBotProps, Bubble);
+  customElement('growtheffect-chatbot', defaultBotProps, Bubble);
 };

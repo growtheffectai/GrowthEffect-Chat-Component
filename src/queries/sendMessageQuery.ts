@@ -61,7 +61,12 @@ export type LeadCaptureRequest = BaseRequest & {
   body: Partial<LeadCaptureInput>;
 };
 
-export const sendFeedbackQuery = ({ chatflowid, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', body, onRequest }: CreateFeedbackRequest) =>
+export const sendFeedbackQuery = ({
+  chatflowid,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  body,
+  onRequest,
+}: CreateFeedbackRequest) =>
   sendRequest({
     method: 'POST',
     url: `${apiHost}/api/v1/feedback/${chatflowid}`,
@@ -69,7 +74,12 @@ export const sendFeedbackQuery = ({ chatflowid, apiHost = process.env.NODE_ENV =
     onRequest: onRequest,
   });
 
-export const updateFeedbackQuery = ({ id, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', body, onRequest }: UpdateFeedbackRequest) =>
+export const updateFeedbackQuery = ({
+  id,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  body,
+  onRequest,
+}: UpdateFeedbackRequest) =>
   sendRequest({
     method: 'PUT',
     url: `${apiHost}/api/v1/feedback/${id}`,
@@ -77,7 +87,12 @@ export const updateFeedbackQuery = ({ id, apiHost = process.env.NODE_ENV === 'de
     onRequest: onRequest,
   });
 
-export const sendMessageQuery = ({ chatflowid, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', body, onRequest }: MessageRequest) =>
+export const sendMessageQuery = ({
+  chatflowid,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  body,
+  onRequest,
+}: MessageRequest) =>
   sendRequest<any>({
     method: 'POST',
     url: `${apiHost}/api/v1/prediction/${chatflowid}`,
@@ -85,7 +100,12 @@ export const sendMessageQuery = ({ chatflowid, apiHost = process.env.NODE_ENV ==
     onRequest: onRequest,
   });
 
-export const createAttachmentWithFormData = ({ chatflowid, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', formData, onRequest }: UpsertRequest) =>
+export const createAttachmentWithFormData = ({
+  chatflowid,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  formData,
+  onRequest,
+}: UpsertRequest) =>
   sendRequest({
     method: 'POST',
     url: `${apiHost}/api/v1/attachments/${chatflowid}/${formData.get('chatId')}`,
@@ -96,7 +116,12 @@ export const createAttachmentWithFormData = ({ chatflowid, apiHost = process.env
     onRequest: onRequest,
   });
 
-export const upsertVectorStoreWithFormData = ({ chatflowid, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', formData, onRequest }: UpsertRequest) =>
+export const upsertVectorStoreWithFormData = ({
+  chatflowid,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  formData,
+  onRequest,
+}: UpsertRequest) =>
   sendRequest({
     method: 'POST',
     url: `${apiHost}/api/v1/vector/upsert/${chatflowid}`,
@@ -107,21 +132,33 @@ export const upsertVectorStoreWithFormData = ({ chatflowid, apiHost = process.en
     onRequest: onRequest,
   });
 
-export const getChatbotConfig = ({ chatflowid, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', onRequest }: MessageRequest) =>
+export const getChatbotConfig = ({
+  chatflowid,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  onRequest,
+}: MessageRequest) =>
   sendRequest<any>({
     method: 'GET',
     url: `${apiHost}/api/v1/public-chatbotConfig/${chatflowid}`,
     onRequest: onRequest,
   });
 
-export const isStreamAvailableQuery = ({ chatflowid, apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', onRequest }: MessageRequest) =>
+export const isStreamAvailableQuery = ({
+  chatflowid,
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  onRequest,
+}: MessageRequest) =>
   sendRequest<any>({
     method: 'GET',
     url: `${apiHost}/api/v1/chatflows-streaming/${chatflowid}`,
     onRequest: onRequest,
   });
 
-export const sendFileDownloadQuery = ({ apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', body, onRequest }: MessageRequest) =>
+export const sendFileDownloadQuery = ({
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  body,
+  onRequest,
+}: MessageRequest) =>
   sendRequest<any>({
     method: 'POST',
     url: `${apiHost}/api/v1/openai-assistants-file/download`,
@@ -130,7 +167,11 @@ export const sendFileDownloadQuery = ({ apiHost = process.env.NODE_ENV === 'deve
     onRequest: onRequest,
   });
 
-export const addLeadQuery = ({ apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co', body, onRequest }: LeadCaptureRequest) =>
+export const addLeadQuery = ({
+  apiHost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  body,
+  onRequest,
+}: LeadCaptureRequest) =>
   sendRequest<any>({
     method: 'POST',
     url: `${apiHost}/api/v1/leads/`,
