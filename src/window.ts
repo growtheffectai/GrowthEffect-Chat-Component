@@ -13,20 +13,26 @@ type BotProps = {
 
 let elementUsed: Element | undefined;
 
-export const initFull = (props: BotProps & { id?: string }) => {
+export const init = (props: BotProps & { id?: string }) => {
   destroy();
-  const fullElement = props.id ? document.getElementById(props.id) : document.querySelector('flowise-fullchatbot');
-  if (!fullElement) throw new Error('<flowise-fullchatbot> element not found.');
-  Object.assign(fullElement, props);
-  elementUsed = fullElement;
-};
-
-export const init = (props: BotProps) => {
-  destroy();
-  const element = document.createElement('flowise-chatbot');
+  const element = document.createElement('growtheffect-chatbot');
   Object.assign(element, props);
   document.body.appendChild(element);
   elementUsed = element;
+};
+
+export const initFull = (props: BotProps & { id?: string }) => {
+  destroy();
+  const fullElement = props.id ? document.getElementById(props.id) : document.querySelector('growtheffect-fullchatbot');
+  if (fullElement) {
+    Object.assign(fullElement, props);
+    window.chatbox = fullElement;
+  } else {
+    const element = document.createElement('growtheffect-chatbot');
+    Object.assign(element, props);
+    document.body.appendChild(element);
+    elementUsed = element;
+  }
 };
 
 export const destroy = () => {
@@ -42,6 +48,7 @@ type Chatbot = {
 declare const window:
   | {
       Chatbot: Chatbot | undefined;
+      chatbox?: Element;
     }
   | undefined;
 
