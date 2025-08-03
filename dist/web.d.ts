@@ -16,8 +16,6 @@ declare const chatbot: {
         chatflowConfig?: Record<string, unknown> | undefined;
         observersConfig?: import("./components/Bot").observersConfigType | undefined;
         theme?: import("./features/bubble/types").BubbleTheme | undefined;
-    } & {
-        id?: string | undefined;
     }) => void;
     destroy: () => void;
 };

@@ -8,12 +8,10 @@ type BotProps = {
     observersConfig?: observersConfigType;
     theme?: BubbleTheme;
 };
-export declare const init: (props: BotProps & {
-    id?: string;
-}) => void;
 export declare const initFull: (props: BotProps & {
     id?: string;
 }) => void;
+export declare const init: (props: BotProps) => void;
 export declare const destroy: () => void;
 type Chatbot = {
     initFull: typeof initFull;
@@ -24,9 +22,7 @@ export declare const parseChatbot: () => {
     initFull: (props: BotProps & {
         id?: string;
     }) => void;
-    init: (props: BotProps & {
-        id?: string;
-    }) => void;
+    init: (props: BotProps) => void;
     destroy: () => void;
 };
 export declare const injectChatbotInWindow: (bot: Chatbot) => void;

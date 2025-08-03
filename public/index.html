@@ -1,11 +1,3 @@
-<!--
-  NOTE: This .html file (and public folder) is optional and can be safely deleted.
-  It serves only as a demo/test page.
-  
-  The chatbot can be embedded directly on any allowed domain using the embed script that
-  is generated when starting the server.
--->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,16 +11,8 @@
     <div id="root"></div>
     <script type="module">
         import Chatbot from './web.js'
-        
-        // Example initialization:
-        // If your .env contains:
-        // agent1=xyz789-uvw456,https://example.com
-        // support=abc123-def456,https://example.com
-        // salesbot=ghi123-jkl456,https://example.com
-        //
-        // Then use the environment variable name as chatflowid:
         Chatbot.init({
-            chatflowid: 'agent1',    // or 'support', 'salesbot', etc.
+            chatflowid: 'agent1',
             apiHost: window.location.origin
         })
     </script>
