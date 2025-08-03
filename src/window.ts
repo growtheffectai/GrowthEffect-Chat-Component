@@ -23,7 +23,7 @@ export const initFull = (props: BotProps & { id?: string }) => {
 
 export const init = (props: BotProps) => {
   destroy();
-  const element = document.createElement('growtheffect-chatbot');
+  const element = document.createElement('flowise-chatbot');
   Object.assign(element, props);
   document.body.appendChild(element);
   elementUsed = element;

@@ -17,15 +17,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const API_HOST = process.env.API_HOST;
-const GROWTHEFFECT_API_KEY = process.env.GROWTHEFFECT_API_KEY;
+const FLOWISE_API_KEY = process.env.FLOWISE_API_KEY;
 
 if (!API_HOST) {
   console.error('API_HOST is not set in environment variables');
   process.exit(1);
 }
 
-if (!GROWTHEFFECT_API_KEY) {
-  console.error('GROWTHEFFECT_API_KEY is not set in environment variables');
+if (!FLOWISE_API_KEY) {
+  console.error('FLOWISE_API_KEY is not set in environment variables');
   process.exit(1);
 }
 
@@ -41,7 +41,7 @@ const parseChatflows = () => {
         !key.startsWith('yarn_') &&
         !key.startsWith('VSCODE_') &&
         key !== 'API_HOST' &&
-        key !== 'GROWTHEFFECT_API_KEY' &&
+        key !== 'FLOWISE_API_KEY' &&
         key !== 'PORT' &&
         key !== 'HOST' &&
         key !== 'BASE_URL' &&
@@ -168,7 +168,7 @@ app.get('/web.js', (req, res) => {
 });
 
 const validateApiKey = (req, res, next) => {
-  if (req.path === '/web.js' || req.path === '/' || req.path === '/favicon.ico' || req.method === 'OPTIONS') {
+  if (req.path === '/web.js' || req.path === '/' || req.method === 'OPTIONS') {
     return next();
   }
 
@@ -218,7 +218,7 @@ const validateApiKey = (req, res, next) => {
   }
 
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1] === GROWTHEFFECT_API_KEY) {
+  if (authHeader && authHeader.startsWith('Bearer ') && authHeader.split(' ')[1] === FLOWISE_API_KEY) {
     return next();
   }
 
@@ -269,7 +269,7 @@ const handleProxy = async (req, res, targetPath) => {
       const response = await fetch(url, {
         method: req.method,
         headers: {
-          Authorization: `Bearer ${GROWTHEFFECT_API_KEY}`,
+          Authorization: `Bearer ${FLOWISE_API_KEY}`,
         },
       });
 
@@ -293,7 +293,7 @@ const handleProxy = async (req, res, targetPath) => {
       method: req.method,
       headers: {
         ...(req.method !== 'GET' && { 'Content-Type': 'application/json' }),
-        Authorization: `Bearer ${GROWTHEFFECT_API_KEY}`,
+        Authorization: `Bearer ${FLOWISE_API_KEY}`,
       },
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
@@ -363,7 +363,7 @@ app.post('/api/v1/attachments/:identifier/:chatId', upload.array('files'), async
     const response = await axios.post(targetUrl, form, {
       headers: {
         ...form.getHeaders(),
-        Authorization: `Bearer ${GROWTHEFFECT_API_KEY}`,
+        Authorization: `Bearer ${FLOWISE_API_KEY}`,
       },
     });
 
