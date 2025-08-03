@@ -2,7 +2,7 @@ import type { BubbleProps } from './features/bubble';
 
 export const defaultBotProps: BubbleProps = {
   chatflowid: '',
-  apiHost: process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://studio.growtheffect.co',
+  apiHost: undefined,
   onRequest: undefined,
   chatflowConfig: undefined,
   theme: undefined,

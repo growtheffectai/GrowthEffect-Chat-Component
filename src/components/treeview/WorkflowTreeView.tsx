@@ -26,25 +26,25 @@ type WorkflowTreeViewProps = {
 const defaultBackgroundColor = '#f7f8ff';
 const defaultTextColor = '#303235';
 const defaultFontSize = 16;
-const GROWTHEFFECT_CREDENTIAL_ID = 'GROWTHEFFECT_CREDENTIAL_ID';
+const FLOWISE_CREDENTIAL_ID = 'FLOWISE_CREDENTIAL_ID';
 
 // Recursive function to remove credential IDs from data
-const removeGrowthEffectCredentialId = (data: any): any => {
+const removeFlowiseCredentialId = (data: any): any => {
   if (!data || typeof data !== 'object') return data;
 
   // Handle arrays
   if (Array.isArray(data)) {
-    return data.map((item) => removeGrowthEffectCredentialId(item));
+    return data.map((item) => removeFlowiseCredentialId(item));
   }
 
   // Clone the object to avoid modifying the original
   const cleanedData = { ...data };
 
   for (const key in cleanedData) {
-    if (key === GROWTHEFFECT_CREDENTIAL_ID) {
+    if (key === FLOWISE_CREDENTIAL_ID) {
       delete cleanedData[key];
     } else if (typeof cleanedData[key] === 'object' && cleanedData[key] !== null) {
-      cleanedData[key] = removeGrowthEffectCredentialId(cleanedData[key]);
+      cleanedData[key] = removeFlowiseCredentialId(cleanedData[key]);
     }
   }
   return cleanedData;
@@ -295,19 +295,19 @@ export const WorkflowTreeView = (props: WorkflowTreeViewProps) => {
 
   // Transform the execution data into a tree structure
   const buildTreeData = (nodes: WorkflowNode[]) => {
-    // for each node, loop through each and every nested key of node.data, and remove the key if it is equal to GROWTHEFFECT_CREDENTIAL_ID
+    // for each node, loop through each and every nested key of node.data, and remove the key if it is equal to FLOWISE_CREDENTIAL_ID
     nodes.forEach((node) => {
-      const removeGrowthEffectCredentialId = (data: any) => {
+      const removeFlowiseCredentialId = (data: any) => {
         for (const key in data) {
-          if (key === GROWTHEFFECT_CREDENTIAL_ID) {
+          if (key === FLOWISE_CREDENTIAL_ID) {
             delete data[key];
           }
           if (typeof data[key] === 'object' && data[key] !== null) {
-            removeGrowthEffectCredentialId(data[key]);
+            removeFlowiseCredentialId(data[key]);
           }
         }
       };
-      if (node.data) removeGrowthEffectCredentialId(node.data);
+      if (node.data) removeFlowiseCredentialId(node.data);
     });
 
     // Create a map for quick node lookup
@@ -660,7 +660,7 @@ export const WorkflowTreeView = (props: WorkflowTreeViewProps) => {
     if (node) {
       return {
         nodeLabel: node.label,
-        data: removeGrowthEffectCredentialId(node.data),
+        data: removeFlowiseCredentialId(node.data),
         status: node.status,
       };
     }

@@ -7,7 +7,7 @@ export function generateEmbedScript(serverUrl) {
   })
 </script>`;
 
-  const scriptFull = `<growtheffect-fullchatbot></growtheffect-fullchatbot>
+  const scriptFull = `<flowise-fullchatbot></flowise-fullchatbot>
 <script type="module">
   import Chatbot from '${serverUrl}/web.js'
   Chatbot.initFull({
