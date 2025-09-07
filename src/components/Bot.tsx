@@ -69,7 +69,7 @@ type FilePreview = {
   type: string;
 };
 
-type messageType = 'apiMessage' | 'userMessage' | 'usermessagewaiting' | 'leadCaptureMessage';
+type messageType = 'apiMessage' | 'userMessage' | 'humanMessage' | 'usermessagewaiting' | 'leadCaptureMessage';
 type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' | 'TIMEOUT' | 'STOPPED';
 
 export type IAgentReasoning = {
@@ -1832,7 +1832,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
                           renderHTML={props.renderHTML}
                         />
                       )}
-                      {message.type === 'apiMessage' && (
+                      {(message.type === 'apiMessage' || message.type === 'humanMessage') && (
                         <BotBubble
                           message={message}
                           fileAnnotations={message.fileAnnotations}
