@@ -1,7 +1,7 @@
 {
-  "name": "flowise-embed",
+  "name": "growtheffect-embed",
   "version": "3.0.3",
-  "description": "Javascript library to display flowise chatbot on your website",
+  "description": "Javascript library to display growtheffect chatbot on your website",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
