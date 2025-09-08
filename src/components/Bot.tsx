@@ -172,6 +172,7 @@ export type BotProps = {
   dateTimeToggle?: DateTimeToggleTheme;
   renderHTML?: boolean;
   closeBot?: () => void;
+  enableInboxStream?: boolean;
 };
 
 export type LeadsConfig = {
@@ -454,7 +455,7 @@ const FormInputView = (props: {
 
 export const Bot = (botProps: BotProps & { class?: string }) => {
   // set a default value for showTitle if not set and merge with other props
-  const props = mergeProps({ showTitle: true }, botProps);
+  const props = mergeProps({ showTitle: true, enableInboxStream: true }, botProps);
   let chatContainer: HTMLDivElement | undefined;
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
@@ -552,6 +553,68 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       chatContainer?.scrollTo(0, chatContainer.scrollHeight);
     }, 50);
   };
+
+  // Resolve chatId for inbox stream with priority: session chatId -> stored object.chatId -> raw localStorage item
+  const resolveInboxChatId = (): string => {
+    if (chatId()) return chatId();
+    const stored = getLocalStorageChatflow(props.chatflowid) as any;
+    if (stored && stored.chatId) return stored.chatId;
+
+    const raw = localStorage.getItem(`${props.chatflowid}_EXTERNAL`);
+    if (raw && typeof raw === 'string' && raw !== '{}') return raw;
+
+    return '';
+  };
+
+  // Subscribe to inbox SSE stream for operator messages
+  createEffect(() => {
+    if (!props.enableInboxStream) return;
+    if (!props.apiHost || !props.chatflowid) return;
+    const resolvedChatId = resolveInboxChatId();
+    if (!resolvedChatId) return;
+
+    const url = `${props.apiHost}/api/v1/inbox/stream/${props.chatflowid}?chatId=${encodeURIComponent(resolvedChatId)}`;
+    let es: EventSource | undefined;
+    try {
+      es = new EventSource(url, { withCredentials: false });
+    } catch (e) {
+      console.error('Failed to open inbox EventSource:', e);
+      return;
+    }
+
+    const onMessage = (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload?.event === 'operatorMessage' && payload?.data) {
+          const data = payload.data;
+          // guard against mismatched sessions
+          if ((data.chatId && data.chatId !== resolveInboxChatId()) || (data.chatflowid && data.chatflowid !== props.chatflowid)) return;
+          const text = data.text ?? data.message ?? '';
+          if (!text) return;
+          setMessages((prev) => {
+            const all = [...cloneDeep(prev), { message: text, type: 'humanMessage' as messageType, dateTime: data.createdDate || new Date().toISOString() }];
+            addChatMessage(all);
+            return all;
+          });
+        }
+      } catch (e) {
+        // ignore malformed json
+      }
+    };
+
+    const onError = (err: any) => {
+      console.error('Inbox EventSource error:', err);
+    };
+
+    es.addEventListener('message', onMessage);
+    es.addEventListener('error', onError as any);
+
+    return () => {
+      es?.removeEventListener('message', onMessage);
+      es?.removeEventListener('error', onError as any);
+      es?.close();
+    };
+  });
 
   /**
    * Add each chat message into localStorage
@@ -1264,28 +1327,28 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       const loadedMessages: MessageType[] =
         chatMessage?.chatHistory?.length > 0
           ? chatMessage.chatHistory?.map((message: MessageType) => {
-              const chatHistory: MessageType = {
-                messageId: message?.messageId,
-                message: message.message,
-                type: message.type,
-                rating: message.rating,
-                dateTime: message.dateTime,
-              };
-              if (message.sourceDocuments) chatHistory.sourceDocuments = message.sourceDocuments;
-              if (message.fileAnnotations) chatHistory.fileAnnotations = message.fileAnnotations;
-              if (message.fileUploads) chatHistory.fileUploads = message.fileUploads;
-              if (message.agentReasoning) chatHistory.agentReasoning = message.agentReasoning;
-              if (message.action) chatHistory.action = message.action;
-              if (message.artifacts) chatHistory.artifacts = message.artifacts;
-              if (message.followUpPrompts) chatHistory.followUpPrompts = message.followUpPrompts;
-              if (message.execution && message.execution.executionData)
-                chatHistory.agentFlowExecutedData =
-                  typeof message.execution.executionData === 'string' ? JSON.parse(message.execution.executionData) : message.execution.executionData;
-              if (message.agentFlowExecutedData)
-                chatHistory.agentFlowExecutedData =
-                  typeof message.agentFlowExecutedData === 'string' ? JSON.parse(message.agentFlowExecutedData) : message.agentFlowExecutedData;
-              return chatHistory;
-            })
+            const chatHistory: MessageType = {
+              messageId: message?.messageId,
+              message: message.message,
+              type: message.type,
+              rating: message.rating,
+              dateTime: message.dateTime,
+            };
+            if (message.sourceDocuments) chatHistory.sourceDocuments = message.sourceDocuments;
+            if (message.fileAnnotations) chatHistory.fileAnnotations = message.fileAnnotations;
+            if (message.fileUploads) chatHistory.fileUploads = message.fileUploads;
+            if (message.agentReasoning) chatHistory.agentReasoning = message.agentReasoning;
+            if (message.action) chatHistory.action = message.action;
+            if (message.artifacts) chatHistory.artifacts = message.artifacts;
+            if (message.followUpPrompts) chatHistory.followUpPrompts = message.followUpPrompts;
+            if (message.execution && message.execution.executionData)
+              chatHistory.agentFlowExecutedData =
+                typeof message.execution.executionData === 'string' ? JSON.parse(message.execution.executionData) : message.execution.executionData;
+            if (message.agentFlowExecutedData)
+              chatHistory.agentFlowExecutedData =
+                typeof message.agentFlowExecutedData === 'string' ? JSON.parse(message.agentFlowExecutedData) : message.agentFlowExecutedData;
+            return chatHistory;
+          })
           : [{ message: props.welcomeMessage ?? defaultWelcomeMessage, type: 'apiMessage' }];
 
       const filteredMessages = loadedMessages.filter((message) => message.type !== 'leadCaptureMessage');
