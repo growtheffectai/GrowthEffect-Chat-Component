@@ -69,7 +69,7 @@ type FilePreview = {
   type: string;
 };
 
-type messageType = 'apiMessage' | 'userMessage' | 'humanMessage' | 'usermessagewaiting' | 'leadCaptureMessage';
+type messageType = 'apiMessage' | 'userMessage' | 'usermessagewaiting' | 'leadCaptureMessage';
 type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' | 'TIMEOUT' | 'STOPPED';
 
 export type IAgentReasoning = {
@@ -172,7 +172,6 @@ export type BotProps = {
   dateTimeToggle?: DateTimeToggleTheme;
   renderHTML?: boolean;
   closeBot?: () => void;
-  enableInboxStream?: boolean;
 };
 
 export type LeadsConfig = {
@@ -184,7 +183,7 @@ export type LeadsConfig = {
   successMessage?: string;
 };
 
-const defaultWelcomeMessage = 'Hi there! How can I help?';
+const defaultWelcomeMessage = 'Merhaba, size nasıl yardımcı olabilirim?';
 
 /*const sourceDocuments = [
     {
@@ -455,7 +454,7 @@ const FormInputView = (props: {
 
 export const Bot = (botProps: BotProps & { class?: string }) => {
   // set a default value for showTitle if not set and merge with other props
-  const props = mergeProps({ showTitle: true, enableInboxStream: true }, botProps);
+  const props = mergeProps({ showTitle: true}, botProps);
   let chatContainer: HTMLDivElement | undefined;
   let bottomSpacer: HTMLDivElement | undefined;
   let botContainer: HTMLDivElement | undefined;
@@ -554,67 +553,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }, 50);
   };
 
-  // Resolve chatId for inbox stream with priority: session chatId -> stored object.chatId -> raw localStorage item
-  const resolveInboxChatId = (): string => {
-    if (chatId()) return chatId();
-    const stored = getLocalStorageChatflow(props.chatflowid) as any;
-    if (stored && stored.chatId) return stored.chatId;
-
-    const raw = localStorage.getItem(`${props.chatflowid}_EXTERNAL`);
-    if (raw && typeof raw === 'string' && raw !== '{}') return raw;
-
-    return '';
-  };
-
-  // Subscribe to inbox SSE stream for operator messages
-  createEffect(() => {
-    if (!props.enableInboxStream) return;
-    if (!props.apiHost || !props.chatflowid) return;
-    const resolvedChatId = resolveInboxChatId();
-    if (!resolvedChatId) return;
-
-    const url = `${props.apiHost}/api/v1/inbox/stream/${props.chatflowid}?chatId=${encodeURIComponent(resolvedChatId)}`;
-    let es: EventSource | undefined;
-    try {
-      es = new EventSource(url, { withCredentials: false });
-    } catch (e) {
-      console.error('Failed to open inbox EventSource:', e);
-      return;
-    }
-
-    const onMessage = (event: MessageEvent) => {
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload?.event === 'operatorMessage' && payload?.data) {
-          const data = payload.data;
-          // guard against mismatched sessions
-          if ((data.chatId && data.chatId !== resolveInboxChatId()) || (data.chatflowid && data.chatflowid !== props.chatflowid)) return;
-          const text = data.text ?? data.message ?? '';
-          if (!text) return;
-          setMessages((prev) => {
-            const all = [...cloneDeep(prev), { message: text, type: 'humanMessage' as messageType, dateTime: data.createdDate || new Date().toISOString() }];
-            addChatMessage(all);
-            return all;
-          });
-        }
-      } catch (e) {
-        // ignore malformed json
-      }
-    };
-
-    const onError = (err: any) => {
-      console.error('Inbox EventSource error:', err);
-    };
-
-    es.addEventListener('message', onMessage);
-    es.addEventListener('error', onError as any);
-
-    return () => {
-      es?.removeEventListener('message', onMessage);
-      es?.removeEventListener('error', onError as any);
-      es?.close();
-    };
-  });
 
   /**
    * Add each chat message into localStorage
@@ -1895,7 +1833,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
                           renderHTML={props.renderHTML}
                         />
                       )}
-                      {(message.type === 'apiMessage' || message.type === 'humanMessage') && (
+                      {(message.type === 'apiMessage') && (
                         <BotBubble
                           message={message}
                           fileAnnotations={message.fileAnnotations}
