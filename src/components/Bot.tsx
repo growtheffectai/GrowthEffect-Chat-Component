@@ -141,6 +141,7 @@ export type BotProps = {
   apiHost?: string;
   onRequest?: (request: RequestInit) => Promise<void>;
   chatflowConfig?: Record<string, unknown>;
+  externalUpdatesPath?: string;
   backgroundColor?: string;
   welcomeMessage?: string;
   errorMessage?: string;
@@ -494,7 +495,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
   const [startInputType, setStartInputType] = createSignal('');
   const [formTitle, setFormTitle] = createSignal('');
   const [formDescription, setFormDescription] = createSignal('');
-  const [formInputsData, setFormInputsData] = createSignal({});
   const [formInputParams, setFormInputParams] = createSignal([]);
 
   // drag & drop file input
@@ -785,6 +785,8 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
   };
 
+  let externalSseController: AbortController | undefined;
+
   const fetchResponseFromEventStream = async (chatflowid: string, params: any) => {
     const chatId = params.chatId;
     const input = params.question;
@@ -870,6 +872,63 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       onerror(err) {
         console.error('EventSource Error: ', err);
         closeResponse();
+        throw err;
+      },
+    });
+  };
+
+  const subscribeToExternalUpdates = async () => {
+    if (!props.externalUpdatesPath || !props.apiHost || !chatId() || !props.chatflowid) return;
+    if (externalSseController) {
+        externalSseController.abort();
+    }
+    externalSseController = new AbortController();
+    let headers: Record<string, string> = { Accept: 'text/event-stream' };
+    const req: RequestInit = { headers };
+      if (props.onRequest) await props.onRequest(req);
+      headers = (req.headers as Record<string, string>) || headers;
+    const url = `${props.apiHost}${props.externalUpdatesPath}?chatflowId=${encodeURIComponent(props.chatflowid)}&chatId=${encodeURIComponent(
+      chatId(),
+    )}`;
+    fetchEventSource(url, {
+      method: 'GET',
+      headers,
+      signal: externalSseController.signal as AbortSignal,
+      openWhenHidden: true,
+      async onopen(response) {
+        if (response.ok && response.headers.get('content-type')?.startsWith(EventStreamContentType)) return;
+        console.error('Failed to open external updates stream');
+        throw new Error('Failed to open external updates stream');
+      },
+      async onmessage(ev) {
+        try {
+          const payload = JSON.parse(ev.data);
+          if (payload?.event === 'externalMessage') {
+            const d = payload.data || {};
+            const role = d.role || d.sender || 'assistant';
+            const text = d.text || d.message || (typeof d === 'string' ? d : JSON.stringify(d));
+            const newMsg: MessageType = {
+              messageId: d.messageId,
+              message: text,
+              type: role === 'user' ? 'userMessage' : 'apiMessage',
+              dateTime: d.dateTime || new Date().toISOString(),
+            };
+            setMessages((prev) => {
+              if (newMsg.messageId && prev.some((m) => m.messageId === newMsg.messageId)) return prev;
+              const all = [...prev, newMsg];
+              addChatMessage(all);
+              return all;
+            });
+          }
+        } catch (e) {
+          console.error('External SSE parse error', e);
+        }
+      },
+      async onclose() {
+        // no-op; could implement retry if desired
+      },
+      onerror(err) {
+        console.error('External EventSource Error: ', err);
         throw err;
       },
     });
@@ -1415,7 +1474,20 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
           type: 'apiMessage',
         },
       ]);
+      if (externalSseController) {
+        try {
+          externalSseController.abort();
+        } catch {
+        externalSseController = undefined;}
+        externalSseController = undefined;
+      }
     };
+  });
+
+  createEffect(() => {
+    if (props.externalUpdatesPath && chatId()) {
+      subscribeToExternalUpdates();
+    }
   });
 
   createEffect(() => {
