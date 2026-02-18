@@ -3,8 +3,17 @@
   "version": "3.0.3",
   "description": "Javascript library to display growtheffect chatbot on your website",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/web.umd.js",
+  "module": "./dist/web.js",
+  "types": "./dist/web.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/web.d.ts",
+      "import": "./dist/web.js",
+      "require": "./dist/web.umd.js",
+      "default": "./dist/web.js"
+    }
+  },
   "files": [
     "dist"
   ],
